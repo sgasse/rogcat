@@ -30,6 +30,7 @@ pub struct Filter {
     level: Level,
     tag: FilterGroup,
     tag_ignore_case: FilterGroup,
+    process: FilterGroup,
     message: FilterGroup,
     message_ignore_case: FilterGroup,
     regex: FilterGroup,
@@ -38,6 +39,7 @@ pub struct Filter {
 pub fn from_args_profile(args: &ArgMatches<'_>, profile: &Profile) -> Result<Filter, Error> {
     let tag = profile.tag.iter().map(String::as_str);
     let tag_ignorecase = profile.tag_ignore_case.iter().map(String::as_str);
+    let process = profile.process.iter().map(String::as_str);
     let message = profile.message.iter().map(String::as_str);
     let message_ignorecase = profile.message_ignore_case.iter().map(String::as_str);
     let regex = profile.regex.iter().map(String::as_str);
@@ -45,6 +47,7 @@ pub fn from_args_profile(args: &ArgMatches<'_>, profile: &Profile) -> Result<Fil
         level: Level::from(args.value_of("level").unwrap_or("")),
         tag: FilterGroup::from_args(args, "tag", tag, false)?,
         tag_ignore_case: FilterGroup::from_args(args, "tag-ignore-case", tag_ignorecase, true)?,
+        process: FilterGroup::from_args(args, "process", process, false)?,
         message: FilterGroup::from_args(args, "message", message, false)?,
         message_ignore_case: FilterGroup::from_args(
             args,
@@ -66,6 +69,7 @@ impl Filter {
 
         self.message.filter(&record.message)
             && self.message_ignore_case.filter(&record.message)
+            && self.process.filter(&record.process)
             && self.tag.filter(&record.tag)
             && self.tag_ignore_case.filter(&record.tag)
             && (self.regex.filter(&record.process)
